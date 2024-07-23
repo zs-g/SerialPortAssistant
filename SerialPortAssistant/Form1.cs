@@ -5,11 +5,15 @@ using System.IO.Ports;
 using System.Text;
 using System.Windows.Forms;
 using System.Linq;
+using System.Threading;
+using System.Collections.Generic;
 
 namespace SerialPortAssistant
 {
     public partial class SerialPortAssistant : DevExpress.XtraEditors.XtraForm
     {
+        private Thread loopThread;
+
         public SerialPortAssistant()
         {
             InitializeComponent();
@@ -72,15 +76,67 @@ namespace SerialPortAssistant
 
         private void btnSend_Click(object sender, EventArgs e)
         {
-            var str = this.txtInputData.Text.Trim();
-            if (string.IsNullOrWhiteSpace(str) || str == "请输入需要发送的内容")
+            if (!this.serialPort.IsOpen)
             {
-                MessageBox.Show("发送内容不能为空", "警告", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("未打开串口连接无法发送数据");
+                return;
+            }
+
+            if (this.loopThread != null)
+            {
+                this.loopThread.Abort();
+                this.loopThread = null;
+                this.btnSend.Text = "发送";
             }
             else
             {
-                this.serialPort.Write(str);
-                this.memoEditShowLog.AppendText(FormatLogShow(str, isSend: true));
+                var str = this.txtInputData.Text.Trim();
+                if (string.IsNullOrWhiteSpace(str) || str == "请输入需要发送的内容")
+                {
+                    MessageBox.Show("发送内容不能为空", "警告", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    if (this.chkSendLoop.Checked)
+                    {
+                        this.btnSend.Text = "停止发送";
+                        this.loopThread = new Thread(() => 
+                        {
+                            while (true) 
+                            {
+
+                                if (this.chkSendHex.Checked)
+                                {
+                                    var bytes = this.StrToToHexByte(str);
+                                    this.serialPort.Write(bytes, 0, bytes.Length);
+                                    this.Invoke(new Action(() => this.memoEditShowLog.AppendText(FormatLogShow(string.Join(" ", bytes.Select(x => x.ToString("X2"))), isSend: true))));
+                                }
+                                else
+                                {
+                                    this.serialPort.Write(str);
+                                    this.Invoke(new Action(() => this.memoEditShowLog.AppendText(FormatLogShow(str, isSend: true))));
+                                }
+
+                                Thread.Sleep(this.txtSendLoopMsec.Text.ToInt32());
+                            }
+                        });
+                        loopThread.Start();
+                    }
+                    else
+                    {
+                        if (this.chkSendHex.Checked)
+                        {
+                            var bytes = this.StrToToHexByte(str);
+                            this.serialPort.Write(bytes, 0, bytes.Length);
+                            this.memoEditShowLog.AppendText(FormatLogShow(string.Join(" ", bytes.Select(x => x.ToString("X2"))), isSend: true));
+                        }
+                        else
+                        {
+                            this.serialPort.Write(str);
+                            this.memoEditShowLog.AppendText(FormatLogShow(str, isSend: true));
+                        }
+                    }
+                }
             }
         }
         
@@ -138,10 +194,23 @@ namespace SerialPortAssistant
             return $"{Environment.NewLine} [{DateTime.Now:yyyy-MM-dd HH:mm:ss}] # {(isSend ? "发送" : "接收")} {dataType} {Environment.NewLine} {str} {Environment.NewLine}";
         }
 
-
-
-
-
+        /// <summary>
+        /// 字符串转16进制字节数组
+        /// </summary>
+        /// <param name="hexString"></param>
+        /// <returns></returns>
+        private byte[] StrToToHexByte(string hexString)
+        {
+            hexString = hexString.Replace(" ", "");
+            var bytes = new List<byte>();
+            for (var i = 0; i < hexString.Length; i += 2)
+            {
+                var str = hexString.Substring(i, Math.Min(2, hexString.Length - i));
+                if (str.Length == 1) str = "0" + str;
+                bytes.Add(Convert.ToByte(str, 16));
+            }
+            return bytes.ToArray();
+        }
 
     }
 }
