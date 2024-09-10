@@ -4,9 +4,46 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SerialPortAssistant"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        WindowStartupLocation="CenterScreen"
+        Title="串口通讯助手" Height="660" Width="960">
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Border Grid.Column="0" BorderBrush="#ddd" BorderThickness="0, 0, 1, 0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0">
+                    
+                </StackPanel>
+                <Border Grid.Row="1" BorderBrush="#ddd" BorderThickness="0, 1, 0, 1">
+                    <StackPanel>
+                        
+                    </StackPanel>
+                </Border>
+                <StackPanel Grid.Row="2">
+                    
+                </StackPanel>
+            </Grid>
+        </Border>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="120"/>
+            </Grid.RowDefinitions>
+            <Border Grid.Row="1" BorderBrush="#ddd" BorderThickness="0, 1, 0, 0">
+                <Grid>
+                    <TextBox BorderThickness="0" Margin="6" FontSize="12" TextWrapping="Wrap"/>
+                    <Button Content="发送" Width="55" Height="25" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,16,16"/>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
