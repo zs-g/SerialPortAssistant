@@ -1,0 +1,108 @@
+﻿<Window x:Class="SerialPortAssistant.Views.SerialPort"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SerialPortAssistant"
+        xmlns:hc="https://handyorg.github.io/handycontrol"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen"
+        Title="串口通讯助手" Height="660" Width="960">
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Border Grid.Column="0" BorderBrush="#ddd" BorderThickness="0, 0, 1, 0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="210"/>
+                    <RowDefinition Height="140"/>
+                </Grid.RowDefinitions>
+
+                <hc:Card Grid.Row="0">
+                    <!--Card 的头部部分-->
+                    <hc:Card.Header>
+                        <TextBlock Text="串口设置" FontSize="14" Foreground="#aaa" Margin="8, 4" />
+                    </hc:Card.Header>
+                    <!--Card 的内容部分-->
+                    <StackPanel Grid.Row="0" Orientation="Vertical" Margin="12,8">
+                        <StackPanel.Resources>
+                            <ResourceDictionary>
+                                <Style TargetType="ComboBox" BasedOn="{StaticResource ComboBoxExtend}">
+                                    <Setter Property="Margin" Value="0,0,0,8" />
+                                    <Setter Property="hc:InfoElement.TitlePlacement" Value="Left" />
+                                </Style>
+                            </ResourceDictionary>
+                        </StackPanel.Resources>
+                        <ComboBox hc:InfoElement.Title="串口号" />
+                        <ComboBox hc:InfoElement.Title="波特率" />
+                        <ComboBox hc:InfoElement.Title="校验位" />
+                        <ComboBox hc:InfoElement.Title="数据位" />
+                        <ComboBox hc:InfoElement.Title="停止位" />
+                        <Button Content="打开连接" Margin="0, 8, 0, 0" Style="{StaticResource ButtonPrimary}" />
+                    </StackPanel>
+                </hc:Card>
+
+                <hc:Card Grid.Row="1">
+                    <!--Card 的头部部分-->
+                    <hc:Card.Header>
+                        <TextBlock Text="接收设置" FontSize="14" Foreground="#aaa" Margin="8, 4" />
+                    </hc:Card.Header>
+                    <!--Card 的内容部分-->
+                    <StackPanel Orientation="Vertical" Margin="12, 8">
+                        <StackPanel.Resources>
+                            <ResourceDictionary>
+                                <Style TargetType="CheckBox" BasedOn="{StaticResource CheckBoxBaseStyle}">
+                                    <Setter Property="Margin" Value="0,16,0,0" />
+                                </Style>
+                            </ResourceDictionary>
+                        </StackPanel.Resources>
+                        <WrapPanel>
+                            <RadioButton Content="ASCII" IsChecked="True" Margin="0,0,48,0" />
+                            <RadioButton Content="HEX" />
+                        </WrapPanel>
+                        <CheckBox Content="按日志模式显示" IsChecked="True" />
+                        <CheckBox Content="接收保存到文件" IsChecked="False" />
+                        <CheckBox Content="接收自动滚屏" IsChecked="True" />
+                        <Button Content="清除接收" Height="28" FontSize="12" Margin="0,16,0,0" />
+                    </StackPanel>
+                </hc:Card>
+
+                <hc:Card Grid.Row="2">
+                    <!--Card 的头部部分-->
+                    <hc:Card.Header>
+                        <TextBlock Text="发送设置" FontSize="14" Foreground="#aaa" Margin="8, 4" />
+                    </hc:Card.Header>
+                    <!--Card 的内容部分-->
+                    <StackPanel Orientation="Vertical" Margin="12, 8">
+                        <WrapPanel>
+                            <RadioButton Content="ASCII" IsChecked="True" Margin="0,0,48,0" />
+                            <RadioButton Content="HEX" />
+                        </WrapPanel>
+                        <CheckBox Content="生成随机数" IsChecked="False" Margin="0, 12, 0, 8" />
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox Content="循环周期(秒)" IsChecked="False" Margin="0, 0, 4, 0" />
+                            <TextBox Text="10000" Width="50" Height="20" VerticalAlignment="Center" Margin="0,0,4,0" />
+                            <TextBlock Text="ms" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </StackPanel>
+                </hc:Card>
+            </Grid>
+        </Border>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="120"/>
+            </Grid.RowDefinitions>
+            <Border Grid.Row="1" BorderBrush="#ddd" BorderThickness="0, 1, 0, 0">
+                <Grid>
+                    <RichTextBox Margin="6" FontSize="12" BorderThickness="0" />
+                    <Button Content="发送" Width="55" Height="25" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,16,16"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
