@@ -45,10 +45,10 @@
                         <ComboBox ItemsSource="{Binding ParityList}" Text="{Binding Parity}" hc:InfoElement.Title="校验位" />
                         <ComboBox ItemsSource="{Binding DataBitsList}" Text="{Binding DataBits}" hc:InfoElement.Title="数据位" />
                         <ComboBox ItemsSource="{Binding StopBitsList}" Text="{Binding StopBits}" hc:InfoElement.Title="停止位" />
-                        <Button Content="打开连接" Margin="0, 8, 0, 0" Style="{StaticResource ButtonPrimary}" />
+                        <Button Command="{Binding SwitchCommand}" Content="打开连接" Margin="0, 8, 0, 0" Style="{StaticResource ButtonPrimary}" />
                     </StackPanel>
                 </hc:Card>
-
+                
                 <hc:Card Grid.Row="1">
                     <!--Card 的头部部分-->
                     <hc:Card.Header>
