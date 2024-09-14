@@ -17,9 +17,9 @@ namespace SerialPortAssistant.Views
     /// <summary>
     /// SerialPort.xaml 的交互逻辑
     /// </summary>
-    public partial class SerialPort : Window
+    public partial class SerialPortWindwo : Window
     {
-        public SerialPort()
+        public SerialPortWindwo()
         {
             InitializeComponent();
         }
