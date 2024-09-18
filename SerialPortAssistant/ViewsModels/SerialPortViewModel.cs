@@ -1,15 +1,19 @@
 ﻿using System.IO.Ports;
-using CommunityToolkit.Mvvm.ComponentModel;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using System.Windows;
 
 namespace SerialPortAssistant.ViewsModels
 {
     public partial class SerialPortViewModel : ObservableValidator
     {
+        private readonly Dispatcher _dispatcher;
         private readonly SerialPort _serialPort;
 
-        public SerialPortViewModel()
+        public SerialPortViewModel(Dispatcher dispatcher)
         {
+            _dispatcher = dispatcher;
             _serialPort = new SerialPort();
             // 默认波特率
             _baudRate = this._serialPort.BaudRate;
@@ -20,10 +24,20 @@ namespace SerialPortAssistant.ViewsModels
             // 默认校验位
             _parity = (int)this._serialPort.Parity;
             // 默认串口名称
-            _portName = this._serialPort.PortName;
-            // 是否打开串口
-            this.IsSerialPort = SerialPort.GetPortNames().Length > 0;
+            // _portName = this._serialPort.PortName;
+
+            if (!SerialPort.GetPortNames().Any())
+            {
+                this.ContentText = $"未检测到串口, 请检查设备是否连接或驱动是否正确安装。\r\n";
+            }
+            WatchSerialPort();
         }
+
+        /// <summary>
+        /// 收发数据
+        /// </summary>
+        [ObservableProperty]
+        private string _contentText;
 
         /// <summary>
         /// 波特率
@@ -88,15 +102,25 @@ namespace SerialPortAssistant.ViewsModels
             get => _portName;
             set
             {
-                this._serialPort.PortName = value;
-                SetProperty(ref _portName, value);
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    this._serialPort.PortName = value;
+                    SetProperty(ref _portName, value);
+                }
             }
         }
 
         /// <summary>
+        /// 按钮显示
+        /// </summary>
+        [ObservableProperty]
+        private string _btnText = "打开串口";
+
+        /// <summary>
         /// COM口列表
         /// </summary>
-        public IEnumerable<string> PortNameList { get; } = SerialPort.GetPortNames();
+        [ObservableProperty]
+        private IEnumerable<string> _portNameList;
 
         /// <summary>
         /// 波特率列表
@@ -122,7 +146,6 @@ namespace SerialPortAssistant.ViewsModels
         /// 是否打开串口
         /// </summary>
         [ObservableProperty]
-        [NotifyCanExecuteChangedFor(nameof(SwitchCommand))]
         private bool _isSerialPort;
 
         /// <summary>
@@ -134,12 +157,40 @@ namespace SerialPortAssistant.ViewsModels
             if (this._serialPort.IsOpen)
             {
                 this._serialPort.Close();
+                this.BtnText = "打开串口";
             }
             else
             {
                 this._serialPort.Open();
+                this.BtnText = "关闭串口";
             }
         }
-        
+
+        /// <summary>
+        /// 监听电脑串口插拔
+        /// </summary>
+        private void WatchSerialPort()
+        {
+            var thread = new Thread(() =>
+            {
+                while (true)
+                {
+                    // 使用 Dispatcher 将 UI 更新委托到主线程
+                    this._dispatcher?.Invoke(() =>
+                    {
+                        this.PortNameList = SerialPort.GetPortNames();
+                        this.IsSerialPort = this.PortNameList.Any();
+                        //if (this.IsSerialPort) this.PortName = this._serialPort.PortName;
+                        this.SwitchCommand.NotifyCanExecuteChanged();
+                    });
+                    Thread.Sleep(1000);
+                }
+            });
+            thread.Start();
+            thread.IsBackground = true;
+        }
+
+
+
     }
 }

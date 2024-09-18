@@ -6,12 +6,13 @@
         xmlns:vm="clr-namespace:SerialPortAssistant.ViewsModels"
         xmlns:local="clr-namespace:SerialPortAssistant"
         xmlns:hc="https://handyorg.github.io/handycontrol"
+        xmlns:cv="clr-namespace:SerialPortAssistant.Convert"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Title="串口通讯助手" Height="660" Width="960">
-    <Window.DataContext>
-        <vm:SerialPortViewModel />
-    </Window.DataContext>
+    <Window.Resources>
+        <cv:SerialPortSwitchBtnStyleConverter x:Key="BtnTextStyleConverter" />
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
@@ -40,12 +41,14 @@
                                 </Style>
                             </ResourceDictionary>
                         </StackPanel.Resources>
+                        
                         <ComboBox ItemsSource="{Binding PortNameList}" Text="{Binding PortName}" hc:InfoElement.Title="串口号" />
                         <ComboBox ItemsSource="{Binding BaudRateList}" Text="{Binding BaudRate}" hc:InfoElement.Title="波特率" />
                         <ComboBox ItemsSource="{Binding ParityList}" Text="{Binding Parity}" hc:InfoElement.Title="校验位" />
                         <ComboBox ItemsSource="{Binding DataBitsList}" Text="{Binding DataBits}" hc:InfoElement.Title="数据位" />
                         <ComboBox ItemsSource="{Binding StopBitsList}" Text="{Binding StopBits}" hc:InfoElement.Title="停止位" />
-                        <Button Command="{Binding SwitchCommand}" Content="打开连接" Margin="0, 8, 0, 0" Style="{StaticResource ButtonPrimary}" />
+                        <Button Command="{Binding SwitchCommand}" Content="{Binding BtnText}" Margin="0, 8, 0, 0" 
+                                Style="{Binding BtnText, Converter={StaticResource BtnTextStyleConverter}}" />
                     </StackPanel>
                 </hc:Card>
                 
@@ -100,6 +103,12 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="120"/>
             </Grid.RowDefinitions>
+            <!--内容显示区域-->
+            <Border Grid.Row="0" BorderBrush="#ddd" BorderThickness="0, 1, 1, 0">
+                <hc:ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBlock TextWrapping="Wrap" Margin="12" FontSize="12" Foreground="#666" Text="{Binding ContentText}"/>
+                </hc:ScrollViewer>
+            </Border>
             <Border Grid.Row="1" BorderBrush="#ddd" BorderThickness="0, 1, 0, 0">
                 <Grid>
                     <Grid.ColumnDefinitions>
