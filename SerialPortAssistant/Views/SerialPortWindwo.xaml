@@ -70,10 +70,10 @@
                             <RadioButton Content="ASCII" IsChecked="True" Margin="0,0,48,0" />
                             <RadioButton Content="HEX" />
                         </WrapPanel>
-                        <CheckBox Content="按日志模式显示" IsChecked="True" />
+                        <CheckBox Content="按日志模式显示" IsChecked="{Binding LogShow}" />
                         <CheckBox Content="接收保存到文件" IsChecked="False" />
                         <CheckBox Content="接收自动滚屏" IsChecked="True" />
-                        <Button Content="清除接收" Height="28" FontSize="12" Margin="0,16,0,0" />
+                        <Button Content="清除接收" Command="{Binding ClearShowDataCommand}" Height="28" FontSize="12" Margin="0,16,0,0" />
                     </StackPanel>
                 </hc:Card>
 
@@ -106,7 +106,7 @@
             <!--内容显示区域-->
             <Border Grid.Row="0" BorderBrush="#ddd" BorderThickness="0, 1, 1, 0">
                 <hc:ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <TextBlock TextWrapping="Wrap" Margin="12" FontSize="12" Foreground="#666" Text="{Binding ContentText}"/>
+                    <TextBlock TextWrapping="Wrap" Margin="6" FontSize="12" Foreground="#333" Text="{Binding ContentText}"/>
                 </hc:ScrollViewer>
             </Border>
             <Border Grid.Row="1" BorderBrush="#ddd" BorderThickness="0, 1, 0, 0">
@@ -123,7 +123,7 @@
                         </Style>
                     </Grid.Resources>
                     <RichTextBox Grid.Column="0" Margin="6" FontSize="12" BorderThickness="0" />
-                    <Button Grid.Column="1" Content="发送" />
+                    <Button Grid.Column="1" Content="发送" Width="80" Height="120" Foreground="#555" />
                 </Grid>
             </Border>
         </Grid>

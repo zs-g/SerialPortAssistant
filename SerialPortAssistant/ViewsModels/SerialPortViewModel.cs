@@ -2,7 +2,6 @@
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
-using System.Windows;
 
 namespace SerialPortAssistant.ViewsModels
 {
@@ -10,6 +9,7 @@ namespace SerialPortAssistant.ViewsModels
     {
         private readonly Dispatcher _dispatcher;
         private readonly SerialPort _serialPort;
+        private List<string> _receiveContentList = [];
 
         public SerialPortViewModel(Dispatcher dispatcher)
         {
@@ -28,7 +28,7 @@ namespace SerialPortAssistant.ViewsModels
 
             if (!SerialPort.GetPortNames().Any())
             {
-                this.ContentText = $"未检测到串口, 请检查设备是否连接或驱动是否正确安装。\r\n";
+                this.ContentText = $"未检测到串口, 请检查设备是否连接或驱动是否正确安装。";
             }
             WatchSerialPort();
         }
@@ -36,8 +36,18 @@ namespace SerialPortAssistant.ViewsModels
         /// <summary>
         /// 收发数据
         /// </summary>
-        [ObservableProperty]
         private string _contentText;
+        public string ContentText
+        {
+            get => this._contentText;
+            set
+            {
+                if(string.IsNullOrWhiteSpace(value)) return;
+                if (this.LogShow) value = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\r\n{value}";
+                this._receiveContentList.Add(value);
+                SetProperty(ref _contentText, string.Join("\r\n\r\n", this._receiveContentList));
+            }
+        }
 
         /// <summary>
         /// 波特率
@@ -143,6 +153,12 @@ namespace SerialPortAssistant.ViewsModels
         public IEnumerable<int> StopBitsList { get; } = Enum.GetValues<StopBits>().Select(s => (int)s);
 
         /// <summary>
+        /// 按照日志显示
+        /// </summary>
+        [ObservableProperty]
+        private bool _logShow = true;
+
+        /// <summary>
         /// 是否打开串口
         /// </summary>
         [ObservableProperty]
@@ -167,6 +183,17 @@ namespace SerialPortAssistant.ViewsModels
         }
 
         /// <summary>
+        /// 清楚显示内容
+        /// </summary>
+        [RelayCommand]
+        public void ClearShowData()
+        {
+            this._receiveContentList.Clear();
+            this.ContentText = "开始清空了";
+            //SetProperty(ref _contentText, "开始清空了");
+        }
+
+        /// <summary>
         /// 监听电脑串口插拔
         /// </summary>
         private void WatchSerialPort()
@@ -179,8 +206,12 @@ namespace SerialPortAssistant.ViewsModels
                     this._dispatcher?.Invoke(() =>
                     {
                         this.PortNameList = SerialPort.GetPortNames();
+                        if (this.PortNameList.Any() != this.IsSerialPort)
+                        {
+                            if (this.PortNameList.Any()) this.ContentText = "串口已经插入";
+                            else this.ContentText = "串口已拔出";
+                        }
                         this.IsSerialPort = this.PortNameList.Any();
-                        //if (this.IsSerialPort) this.PortName = this._serialPort.PortName;
                         this.SwitchCommand.NotifyCanExecuteChanged();
                     });
                     Thread.Sleep(1000);
