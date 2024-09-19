@@ -11,6 +11,7 @@
         WindowStartupLocation="CenterScreen"
         Title="串口通讯助手" Height="660" Width="960">
     <Window.Resources>
+        <cv:ReceiveTypeConverter x:Key="ReceiveTypeConverter" />
         <cv:SerialPortSwitchBtnStyleConverter x:Key="BtnTextStyleConverter" />
     </Window.Resources>
     <Grid>
@@ -67,8 +68,8 @@
                             </ResourceDictionary>
                         </StackPanel.Resources>
                         <WrapPanel>
-                            <RadioButton Content="ASCII" IsChecked="True" Margin="0,0,48,0" />
-                            <RadioButton Content="HEX" />
+                            <RadioButton GroupName="receive" Content="ASCII" IsChecked="{Binding ReceiveType, Converter={StaticResource ReceiveTypeConverter}, ConverterParameter=ASCII }" Margin="0,0,48,0" />
+                            <RadioButton GroupName="receive" Content="HEX" IsChecked="{Binding ReceiveType, Converter={StaticResource ReceiveTypeConverter}, ConverterParameter=HEX }" />
                         </WrapPanel>
                         <CheckBox Content="按日志模式显示" IsChecked="{Binding LogShow}" />
                         <CheckBox Content="接收保存到文件" IsChecked="False" />
@@ -121,9 +122,14 @@
                             <Setter Property="FontSize" Value="16" />
                             <Setter Property="Foreground" Value="#333" />
                         </Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Height" Value="120" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="TextWrapping" Value="Wrap" />
+                        </Style>
                     </Grid.Resources>
-                    <RichTextBox Grid.Column="0" Margin="6" FontSize="12" BorderThickness="0" />
-                    <Button Grid.Column="1" Content="发送" Width="80" Height="120" Foreground="#555" />
+                    <TextBox Grid.Column="0" Text="{Binding InputContent}" Margin="6" FontSize="12" BorderThickness="0" />
+                    <Button Grid.Column="1" Command="{Binding SendCommand}" Content="发送" Width="80" Height="120" Foreground="#555" />
                 </Grid>
             </Border>
         </Grid>

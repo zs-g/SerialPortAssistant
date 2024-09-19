@@ -2,6 +2,8 @@
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using System.Windows;
+using System.Text;
 
 namespace SerialPortAssistant.ViewsModels
 {
@@ -30,7 +32,17 @@ namespace SerialPortAssistant.ViewsModels
             {
                 this.ContentText = $"未检测到串口, 请检查设备是否连接或驱动是否正确安装。";
             }
+
             WatchSerialPort();
+
+            this._serialPort.DataReceived += (s, e) =>
+            {
+                var sp = s as SerialPort;
+                var byt = new byte[sp.BytesToRead];
+                sp.Read(byt, 0, byt.Length);
+                if(this.ReceiveType == "HEX") this.ContentText = BitConverter.ToString(byt).Replace("-", " ");
+                else this.ContentText = Encoding.ASCII.GetString(byt);
+            };
         }
 
         /// <summary>
@@ -42,7 +54,11 @@ namespace SerialPortAssistant.ViewsModels
             get => this._contentText;
             set
             {
-                if(string.IsNullOrWhiteSpace(value)) return;
+                if (string.IsNullOrWhiteSpace(value) && this._receiveContentList.Count == 0)
+                {
+                    SetProperty(ref _contentText, "");
+                    return;
+                }
                 if (this.LogShow) value = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\r\n{value}";
                 this._receiveContentList.Add(value);
                 SetProperty(ref _contentText, string.Join("\r\n\r\n", this._receiveContentList));
@@ -53,7 +69,7 @@ namespace SerialPortAssistant.ViewsModels
         /// 波特率
         /// </summary>
         private int _baudRate;
-        public int BaudRate { 
+        public int BaudRate {
             get => _baudRate;
             set
             {
@@ -66,10 +82,10 @@ namespace SerialPortAssistant.ViewsModels
         /// 数据位
         /// </summary>
         private int _dataBits;
-        public int  DataBits { 
+        public int DataBits {
             get => _dataBits;
             set
-            { 
+            {
                 this._serialPort.DataBits = value;
                 SetProperty(ref _dataBits, value);
             }
@@ -127,15 +143,27 @@ namespace SerialPortAssistant.ViewsModels
         private string _btnText = "打开串口";
 
         /// <summary>
+        /// 输入内容
+        /// </summary>
+        [ObservableProperty]
+        private string _inputContent;
+
+        /// <summary>
         /// COM口列表
         /// </summary>
         [ObservableProperty]
         private IEnumerable<string> _portNameList;
 
         /// <summary>
+        /// 接收类型
+        /// </summary>
+        [ObservableProperty]
+        private string _receiveType = "ASCII";
+
+        /// <summary>
         /// 波特率列表
         /// </summary>
-        public IEnumerable<int> BaudRateList { get;} = [300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 128000, 256000];
+        public IEnumerable<int> BaudRateList { get; } = [300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200, 128000, 256000];
 
         /// <summary>
         /// 校验位列表
@@ -169,16 +197,18 @@ namespace SerialPortAssistant.ViewsModels
         /// </summary>
         [RelayCommand(CanExecute = nameof(IsSerialPort))]
         public void Switch()
-        { 
+        {
             if (this._serialPort.IsOpen)
             {
                 this._serialPort.Close();
                 this.BtnText = "打开串口";
+                this.ContentText = "连接已关闭";
             }
             else
             {
                 this._serialPort.Open();
                 this.BtnText = "关闭串口";
+                this.ContentText = "连接已打开";
             }
         }
 
@@ -189,7 +219,7 @@ namespace SerialPortAssistant.ViewsModels
         public void ClearShowData()
         {
             this._receiveContentList.Clear();
-            this.ContentText = "开始清空了";
+            this.ContentText = "";
             //SetProperty(ref _contentText, "开始清空了");
         }
 
@@ -202,24 +232,53 @@ namespace SerialPortAssistant.ViewsModels
             {
                 while (true)
                 {
-                    // 使用 Dispatcher 将 UI 更新委托到主线程
-                    this._dispatcher?.Invoke(() =>
+                    try
                     {
-                        this.PortNameList = SerialPort.GetPortNames();
-                        if (this.PortNameList.Any() != this.IsSerialPort)
+                        // 使用 Dispatcher 将 UI 更新委托到主线程
+                        this._dispatcher?.Invoke(() =>
                         {
-                            if (this.PortNameList.Any()) this.ContentText = "串口已经插入";
-                            else this.ContentText = "串口已拔出";
-                        }
-                        this.IsSerialPort = this.PortNameList.Any();
-                        this.SwitchCommand.NotifyCanExecuteChanged();
-                    });
-                    Thread.Sleep(1000);
+                            this.PortNameList = SerialPort.GetPortNames();
+                            if (this.PortNameList.Any() != this.IsSerialPort)
+                            {
+                                if (this.PortNameList.Any()) this.ContentText = "串口已经插入";
+                                else this.ContentText = "串口已拔出";
+                            }
+                            this.IsSerialPort = this.PortNameList.Any();
+                            this.SwitchCommand.NotifyCanExecuteChanged();
+                        });
+                        Thread.Sleep(1000);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
                 }
             });
             thread.Start();
-            thread.IsBackground = true;
         }
+
+        /// <summary>
+        /// 发送数据
+        /// </summary>
+        [RelayCommand]
+        public void Send() 
+        {
+            if (!this._serialPort.IsOpen)
+            {
+                MessageBox.Show("链接还未打开 无法发送数据信息");
+                return;
+            }
+            var str = this.InputContent;
+            if (!string.IsNullOrWhiteSpace(str))
+            {
+                this.ContentText = str.Trim();
+                this._serialPort.Write(this.InputContent.Trim());
+
+                return;
+            }
+            MessageBox.Show("发送内容不可为空");
+        }
+
+
 
 
 
